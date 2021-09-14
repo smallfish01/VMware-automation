@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
-# author: 
+# author: Old Farmer
 # Shutdown VM script
 import types
 import json
