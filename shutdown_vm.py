@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
-# author: Old Farmer
+# author:
 # Shutdown VM script
 import types
 import json
@@ -55,7 +55,6 @@ class Vcenter():
 
     def shutdown_vm(self, vm_name, token):
         url = 'https://' + host + '/rest/vcenter/vm?filter.names.1={}'.format(vm_name)
-
         payload = {}
         headers = {
             'Cookie': token
@@ -70,7 +69,6 @@ class Vcenter():
             print("vm:{} 已关机，无需重复关机".format(vm_name))
            # os._exit(1)
             return
-        #
         # print("vm:",vm,"vm_status:",vm_status)
 
         # stop vm
@@ -79,13 +77,21 @@ class Vcenter():
         headers = {
             'Cookie': token
         }
-        print(url)
+        # print(url)
         response = requests.request("POST", url, headers=headers, verify=False, data=payload)
         if response.status_code == 200:
+            # print(response.status_code)
             print("vm:{} stopping...".format(vm_name))
-            # Check vm status
-            if vm_status == "POWERED_OFF":
-                print("vm:{}已经关机".format(vm_name))
+        # time.sleep(10)
+        url = 'https://' + host + '/rest/vcenter/vm'
+        response = requests.request("GET", url, headers=headers, verify=False, data=payload)
+        print(response.request)
+        json_str = json.loads(response.text)
+        print("json_str:", json_str)
+        for x in range(1, len(json_str['value'])):
+            if json_str['value'][x]['power_state'] == 'POWERED_OFF':
+                print("vm:", json_str['value'][x]['name'], "status:", json_str['value'][x]['power_state'], "已关机.")
+            return
 
 
 if __name__ == '__main__':
@@ -110,5 +116,3 @@ if __name__ == '__main__':
         for vm_name in sys.argv[2:]:
             print(vm_name)
             abc.shutdown_vm(vm_name, token1)
-
-
