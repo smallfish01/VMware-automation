@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
+# Author: Jun Yu
+# V1.0
 # Start VM script
 import types
 import json
