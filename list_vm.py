@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
-# Author: Old Farmer
+# Author: Jun Yu
 # List VM script
 
 import types
