@@ -13,7 +13,7 @@ import random
 import sys
 import os
 import time
-import fire
+
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
