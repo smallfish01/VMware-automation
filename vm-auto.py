@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
-# Check/tart/Stop VM script
-# Version: V1.0
-# Created: 2021/09/15
+# /Check/tart/Stop VM script
+# Version: V1.1
 # Author: Jun Yu
+# Created: 2021/09/15
 import types
 import json
 import requests
@@ -13,6 +13,7 @@ import random
 import sys
 import os
 import time
+import fire
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -83,7 +84,8 @@ class Vcenter():
             print("vm:{} starting...".format(vm_name))
         # waiting VM status.
         time.sleep(10)
-        url = 'https://' + host + '/rest/vcenter/vm'
+        url = 'https://' + host + '/rest/vcenter/vm?filter.names.1={}'.format(vm_name)
+        #print("url=", url)
         response = requests.request("GET", url, headers=headers, verify=False, data=payload)
         json_str = json.loads(response.text)
         for x in range(0, len(json_str['value'])):
@@ -117,26 +119,37 @@ class Vcenter():
         }
         response = requests.request("POST", url, headers=headers, verify=False, data=payload)
         if response.status_code == 200:
+            #print(response)
             print("vm:{} stopping...".format(vm_name))
-        time.sleep(10)
-        url = 'https://' + host + '/rest/vcenter/vm'
+        #time.sleep(10)
+        url = 'https://' + host + '/rest/vcenter/vm?filter.names.1={}'.format(vm_name)
+        #print("url=", url)
         response = requests.request("GET", url, headers=headers, verify=False, data=payload)
         json_str = json.loads(response.text)
         for x in range(0, len(json_str['value'])):
             if json_str['value'][x]['power_state'] == 'POWERED_OFF':
                 print("vm:", json_str['value'][x]['name'], "status:", json_str['value'][x]['power_state'], "已关机.")
             return
-
+def error():
+    print("参数错误")
+    print("脚本使用方法：")
+    print("================================================================")
+    print("查询VM状态：""python {} list_vm".format(sys.argv[0]))
+    print("启动VM：""python {} start vm_name1 vm_name2 vm_name(n)".format(sys.argv[0]))
+    print("关闭VM：""python {} shutdown vm_name1 vm_name2 vm_name(n)".format(sys.argv[0]))
+    print("================================================================")
+    os._exit(1)
 
 if __name__ == '__main__':
     if len(sys.argv) == 1:
-        print("参数错误")
-        print("脚本使用方法：")
-        print("================================================================")
-        print("python {} list_vm".format(sys.argv[0]))
-        print("python {} start vm_name1 vm_name2 vm_name(n)".format(sys.argv[0]))
-        print("python {} shutdown vm_name1 vm_name2 vm_name(n)".format(sys.argv[0]))
-        print("================================================================")
+        error()
+#        print("参数错误")
+#        print("脚本使用方法：")
+#        print("================================================================")
+#        print("查询VM状态：""python {} list_vm".format(sys.argv[0]))
+#        print("启动VM：""python {} start vm_name1 vm_name2 vm_name(n)".format(sys.argv[0]))
+#        print("关闭VM：""python {} shutdown vm_name1 vm_name2 vm_name(n)".format(sys.argv[0]))
+#        print("================================================================")
         os._exit(1)
 
     abc = Vcenter()
@@ -144,17 +157,19 @@ if __name__ == '__main__':
 
     if len(sys.argv) == 2 and sys.argv[1] == "list_vm":
         abc.list_vm(token1)
-    if len(sys.argv) <= 2 and sys.argv[1] == "start":
+    elif len(sys.argv) <= 2 and sys.argv[1] == "start":
         print("Please entry VM name.")
         os._exit(1)
-    if len(sys.argv) >= 3 and sys.argv[1] == "start":
+    elif len(sys.argv) >= 3 and sys.argv[1] == "start":
         for vm_name in sys.argv[2:]:
             print(vm_name)
             abc.start_vm(vm_name, token1)
-    if len(sys.argv) <= 2 and sys.argv[1] == "shutdown":
+    elif len(sys.argv) <= 2 and sys.argv[1] == "shutdown":
         print("Please entry VM name.")
         os._exit(1)
-    if len(sys.argv) >= 3 and sys.argv[1] == "shutdown":
+    elif len(sys.argv) >= 3 and sys.argv[1] == "shutdown":
         for vm_name in sys.argv[2:]:
             print(vm_name)
             abc.shutdown_vm(vm_name, token1)
+    else:
+        error()
