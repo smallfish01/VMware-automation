@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 # /Check/tart/Stop VM script
-# Version: V1.1
+# Version: V1.2
 # Author: Jun Yu
 # Created: 2021/09/15
 import types
@@ -18,7 +18,7 @@ import time
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 host = '192.168.13.182'
-
+# VCenter server IP
 
 def get_cookies():
     url = 'https://' + host + '/rest/com/vmware/cis/session'
@@ -54,7 +54,7 @@ class Vcenter():
 
     def start_vm(self, vm_name, token):
         url = 'https://' + host + '/rest/vcenter/vm?filter.names.1={}'.format(vm_name)
-        # print(url)
+        # Get VM name which need start
         payload = {}
         headers = {
             'Cookie': token
@@ -62,7 +62,6 @@ class Vcenter():
         response = requests.request("GET", url, headers=headers, verify=False, data=payload)
         if len(response.json()['value']) == 0:
             print("没有找到vm:{}".format(vm_name))
-            # os._exit(1)
             return
         vm_status = response.json()['value'][0]['power_state']
         vm = response.json()['value'][0]['vm']
@@ -81,11 +80,9 @@ class Vcenter():
         }
         response = requests.request("POST", url, headers=headers, verify=False, data=payload)
         if response.status_code == 200:
-            print("vm:{} starting...".format(vm_name))
-        # waiting VM status.
+            print("vm:{} is starting...".format(vm_name))
         time.sleep(10)
         url = 'https://' + host + '/rest/vcenter/vm?filter.names.1={}'.format(vm_name)
-        #print("url=", url)
         response = requests.request("GET", url, headers=headers, verify=False, data=payload)
         json_str = json.loads(response.text)
         for x in range(0, len(json_str['value'])):
@@ -102,34 +99,47 @@ class Vcenter():
         response = requests.request("GET", url, headers=headers, verify=False, data=payload)
         if len(response.json()['value']) == 0:
             print("没有找到vm:{}".format(vm_name))
-            #os._exit(1)
             return
         vm_status = response.json()['value'][0]['power_state']
         vm = response.json()['value'][0]['vm']
         if vm_status == "POWERED_OFF":
             print("vm:{} 已关机，无需重复关机".format(vm_name))
-            # os._exit(1)
             return
 
         # stop vm
-        url = 'https://' + host + '/rest/vcenter/vm/{}/power/stop'.format(vm)
+        url = 'https://' + host + '/rest/vcenter/vm/{}/guest/power?action=shutdown'.format(vm)
         payload = {}
         headers = {
             'Cookie': token
         }
         response = requests.request("POST", url, headers=headers, verify=False, data=payload)
         if response.status_code == 200:
-            #print(response)
             print("vm:{} stopping...".format(vm_name))
-        #time.sleep(10)
         url = 'https://' + host + '/rest/vcenter/vm?filter.names.1={}'.format(vm_name)
-        #print("url=", url)
         response = requests.request("GET", url, headers=headers, verify=False, data=payload)
         json_str = json.loads(response.text)
-        for x in range(0, len(json_str['value'])):
-            if json_str['value'][x]['power_state'] == 'POWERED_OFF':
-                print("vm:", json_str['value'][x]['name'], "status:", json_str['value'][x]['power_state'], "已关机.")
-            return
+        states = (json_str['value'][0]['power_state'])
+        result = False
+        now_a = time.time()
+        while result == False:
+            response = requests.request("GET", url, headers=headers, verify=False, data=payload)
+            json_str = json.loads(response.text)
+            states = (json_str['value'][0]['power_state'])
+            if states == "POWERED_OFF":
+                print("VM status is:", states)
+                print("vm:", vm_name, "已关机.")
+                result = True
+            else:
+                print("VM status is", states, "please wait.")
+            time.sleep(5)
+            now_b = time.time() - now_a
+            if now_b > 60:
+                print("VM shutdown error,shutdown process abort.")
+                # if a VM server shutdown more than 60s, then abort the process.
+                result = True
+                os._exit(1)
+
+
 def error():
     print("参数错误")
     print("脚本使用方法：")
