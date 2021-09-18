@@ -62,7 +62,8 @@ class Vcenter():
         response = requests.request("GET", url, headers=headers, verify=False, data=payload)
         if len(response.json()['value']) == 0:
             print("没有找到vm:{}".format(vm_name))
-            return
+            os._exit(1)
+            # return
         vm_status = response.json()['value'][0]['power_state']
         vm = response.json()['value'][0]['vm']
         if vm_status != "POWERED_ON":
@@ -99,7 +100,8 @@ class Vcenter():
         response = requests.request("GET", url, headers=headers, verify=False, data=payload)
         if len(response.json()['value']) == 0:
             print("没有找到vm:{}".format(vm_name))
-            return
+            os._exit(1)
+            # return
         vm_status = response.json()['value'][0]['power_state']
         vm = response.json()['value'][0]['vm']
         if vm_status == "POWERED_OFF":
@@ -126,11 +128,11 @@ class Vcenter():
             json_str = json.loads(response.text)
             states = (json_str['value'][0]['power_state'])
             if states == "POWERED_OFF":
-                print("VM status is:", states)
+                print("VM status is", states)
                 print("vm:", vm_name, "已关机.")
                 result = True
             else:
-                print("VM status is", states, "please wait.")
+                print("VM", vm_name, "status is", states, "please wait.")
             time.sleep(5)
             now_b = time.time() - now_a
             if now_b > 60:
