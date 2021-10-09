@@ -15,7 +15,7 @@ import os
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-host = '192.168.13.182'
+host = 'XX.XX.XX.XX'
 
 
 class Vcenter():
@@ -26,7 +26,7 @@ class Vcenter():
         payload = {}
         files = {}
         headers = {
-            'Authorization': 'Basic YWRtaW5pc3RyYXRvckB2c3BoZXJlLmxvY2FsOlRjMTIzNDU2Kigp'
+            'Authorization': 'Basic YWRtaW5pc3RyYXRvckB2c3BoZXJlLmxvY2FsOlRjMTIzNDU2Kigp1erwrwewer3432srrwerwerew'
         }
 
         response = requests.request("POST", url, headers=headers, verify=False, data=payload, files=files)
